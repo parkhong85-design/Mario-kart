@@ -1,0 +1,1167 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <meta
+    name="description"
+    content="마리오카트 기본 캐릭터 중 오늘의 운전자를 무작위로 선택합니다."
+  >
+
+  <title>마리오카트 운전자 고르기</title>
+
+  <style>
+    :root {
+      --orange-100: #fff1c9;
+      --orange-200: #ffdd91;
+      --orange-300: #ffc34e;
+      --orange-400: #ff9f1c;
+      --orange-500: #ff7900;
+      --orange-600: #df5500;
+
+      --yellow-300: #ffe96c;
+      --yellow-400: #ffda39;
+      --yellow-500: #ffc400;
+
+      --red-400: #ff5141;
+      --red-500: #ef3024;
+      --red-600: #c91c13;
+
+      --brown-700: #704014;
+      --brown-800: #552900;
+      --brown-900: #351900;
+
+      --white: #ffffff;
+
+      --main-shadow:
+        0 28px 75px rgba(133, 55, 0, 0.24);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      min-width: 320px;
+      min-height: 100%;
+    }
+
+    body {
+      min-width: 320px;
+      min-height: 100vh;
+      padding: 24px;
+      overflow-x: hidden;
+      color: var(--brown-900);
+      font-family:
+        "Pretendard",
+        "Apple SD Gothic Neo",
+        "Noto Sans KR",
+        "Malgun Gothic",
+        Arial,
+        sans-serif;
+      background:
+        radial-gradient(
+          circle at 13% 12%,
+          rgba(255, 255, 255, 0.86) 0 3%,
+          transparent 3.2%
+        ),
+        radial-gradient(
+          circle at 88% 17%,
+          rgba(255, 255, 255, 0.55) 0 4%,
+          transparent 4.2%
+        ),
+        radial-gradient(
+          circle at 14% 87%,
+          rgba(255, 255, 255, 0.48) 0 5%,
+          transparent 5.2%
+        ),
+        linear-gradient(
+          135deg,
+          #fff8c8 0%,
+          #ffe25d 45%,
+          #ff9d2d 100%
+        );
+    }
+
+    body::before {
+      position: fixed;
+      inset: 0;
+      z-index: -2;
+      content: "";
+      pointer-events: none;
+      opacity: 0.11;
+      background-image:
+        linear-gradient(
+          45deg,
+          #ffffff 25%,
+          transparent 25%
+        ),
+        linear-gradient(
+          -45deg,
+          #ffffff 25%,
+          transparent 25%
+        ),
+        linear-gradient(
+          45deg,
+          transparent 75%,
+          #ffffff 75%
+        ),
+        linear-gradient(
+          -45deg,
+          transparent 75%,
+          #ffffff 75%
+        );
+      background-position:
+        0 0,
+        0 22px,
+        22px -22px,
+        -22px 0;
+      background-size: 44px 44px;
+    }
+
+    button {
+      font: inherit;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .background-decoration {
+      position: fixed;
+      z-index: -1;
+      border-radius: 50%;
+      pointer-events: none;
+      filter: blur(3px);
+    }
+
+    .decoration-left {
+      top: -100px;
+      left: -100px;
+      width: 310px;
+      height: 310px;
+      background: rgba(255, 62, 32, 0.16);
+    }
+
+    .decoration-right {
+      right: -140px;
+      bottom: -150px;
+      width: 410px;
+      height: 410px;
+      background: rgba(255, 102, 0, 0.18);
+    }
+
+    .page {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      min-height: calc(100vh - 48px);
+    }
+
+    .selector-card {
+      width: min(100%, 790px);
+      padding: 42px;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.9);
+      border-radius: 36px;
+      background:
+        linear-gradient(
+          145deg,
+          rgba(255, 255, 255, 0.97),
+          rgba(255, 249, 222, 0.94)
+        );
+      box-shadow: var(--main-shadow);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+    }
+
+    .header {
+      text-align: center;
+    }
+
+    .header-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 13px;
+      padding: 8px 16px;
+      border: 1px solid rgba(255, 121, 0, 0.16);
+      border-radius: 999px;
+      color: var(--orange-600);
+      font-size: 14px;
+      font-weight: 900;
+      background: var(--orange-100);
+    }
+
+    .title {
+      color: var(--brown-900);
+      font-size: clamp(31px, 7vw, 54px);
+      font-weight: 950;
+      line-height: 1.16;
+      letter-spacing: -0.06em;
+      word-break: keep-all;
+    }
+
+    .title-highlight {
+      color: var(--red-500);
+    }
+
+    .subtitle {
+      margin-top: 13px;
+      color: #8b6240;
+      font-size: 16px;
+      font-weight: 650;
+      line-height: 1.65;
+      word-break: keep-all;
+    }
+
+    .candidate-summary {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      margin: 25px auto;
+      padding: 13px 18px;
+      border: 1px solid rgba(255, 143, 0, 0.2);
+      border-radius: 17px;
+      color: var(--brown-700);
+      font-size: 15px;
+      font-weight: 800;
+      background: rgba(255, 239, 184, 0.64);
+    }
+
+    .candidate-count {
+      color: var(--red-500);
+      font-weight: 950;
+    }
+
+    .result-panel {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 270px;
+      padding: 36px 20px;
+      overflow: hidden;
+      border: 3px solid rgba(255, 167, 30, 0.46);
+      border-radius: 28px;
+      text-align: center;
+      background:
+        radial-gradient(
+          circle at center,
+          #ffffff 0%,
+          #fff8cf 67%,
+          #ffe063 100%
+        );
+      box-shadow:
+        inset 0 0 0 7px rgba(255, 255, 255, 0.56),
+        0 16px 38px rgba(198, 91, 0, 0.14);
+      transition:
+        border-color 0.3s ease,
+        box-shadow 0.3s ease,
+        background 0.3s ease;
+    }
+
+    .result-panel::before,
+    .result-panel::after {
+      position: absolute;
+      z-index: 1;
+      color: rgba(255, 139, 0, 0.2);
+      font-size: 60px;
+      content: "★";
+      pointer-events: none;
+    }
+
+    .result-panel::before {
+      top: 10px;
+      left: 19px;
+      transform: rotate(-17deg);
+    }
+
+    .result-panel::after {
+      right: 19px;
+      bottom: 9px;
+      transform: rotate(17deg);
+    }
+
+    .result-content {
+      position: relative;
+      z-index: 4;
+      width: 100%;
+    }
+
+    .result-guide {
+      margin-bottom: 13px;
+      color: var(--orange-600);
+      font-size: 15px;
+      font-weight: 900;
+      letter-spacing: 0.02em;
+    }
+
+    .result-text {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 105px;
+      padding: 0 8px;
+      color: var(--brown-900);
+      font-size: clamp(38px, 9vw, 72px);
+      font-weight: 950;
+      line-height: 1.15;
+      letter-spacing: -0.06em;
+      word-break: keep-all;
+      overflow-wrap: anywhere;
+      transform: translateZ(0);
+    }
+
+    .winner-message {
+      min-height: 40px;
+      margin-top: 12px;
+      color: transparent;
+      font-size: clamp(21px, 4.5vw, 29px);
+      font-weight: 950;
+      line-height: 1.4;
+      opacity: 0;
+      transform: translateY(10px);
+      transition:
+        color 0.3s ease,
+        opacity 0.3s ease,
+        transform 0.3s ease;
+    }
+
+    .action-section {
+      margin-top: 29px;
+      text-align: center;
+    }
+
+    .select-button {
+      position: relative;
+      width: min(100%, 520px);
+      min-height: 82px;
+      padding: 18px 27px;
+      overflow: hidden;
+      border: 0;
+      border-bottom: 7px solid #a92f00;
+      border-radius: 24px;
+      color: var(--white);
+      font-size: clamp(20px, 4.5vw, 28px);
+      font-weight: 950;
+      letter-spacing: -0.04em;
+      cursor: pointer;
+      background:
+        linear-gradient(
+          135deg,
+          var(--red-500) 0%,
+          var(--orange-500) 52%,
+          var(--yellow-500) 100%
+        );
+      box-shadow:
+        0 16px 32px rgba(213, 67, 0, 0.34),
+        inset 0 2px 0 rgba(255, 255, 255, 0.35);
+      transition:
+        transform 0.16s ease,
+        box-shadow 0.16s ease,
+        filter 0.16s ease,
+        border-bottom-width 0.16s ease;
+    }
+
+    .select-button::before {
+      position: absolute;
+      top: -75%;
+      left: -48%;
+      width: 37%;
+      height: 260%;
+      content: "";
+      background: rgba(255, 255, 255, 0.32);
+      transform: rotate(24deg);
+      transition: left 0.48s ease;
+    }
+
+    .select-button:hover:not(:disabled)::before {
+      left: 125%;
+    }
+
+    .select-button:hover:not(:disabled) {
+      filter: saturate(1.12) brightness(1.04);
+      transform: translateY(-3px);
+      box-shadow:
+        0 20px 39px rgba(213, 67, 0, 0.4),
+        inset 0 2px 0 rgba(255, 255, 255, 0.4);
+    }
+
+    .select-button:active:not(:disabled) {
+      border-bottom-width: 3px;
+      transform: translateY(3px);
+    }
+
+    .select-button:focus-visible {
+      outline: 4px solid rgba(255, 121, 0, 0.28);
+      outline-offset: 5px;
+    }
+
+    .select-button:disabled {
+      opacity: 0.84;
+      cursor: wait;
+      filter: grayscale(0.08) brightness(0.95);
+    }
+
+    .keyboard-help {
+      margin-top: 14px;
+      color: #a07856;
+      font-size: 13px;
+      font-weight: 650;
+    }
+
+    /* 슬롯머신 작동 상태 */
+    .result-panel.spinning {
+      border-color: var(--orange-400);
+      box-shadow:
+        inset 0 0 0 7px rgba(255, 255, 255, 0.57),
+        0 0 0 8px rgba(255, 166, 0, 0.11),
+        0 19px 45px rgba(198, 91, 0, 0.22);
+    }
+
+    .result-panel.spinning .result-text {
+      animation: slot-machine-motion 0.1s linear infinite;
+    }
+
+    @keyframes slot-machine-motion {
+      0% {
+        opacity: 0.45;
+        filter: blur(1.7px);
+        transform: translateY(-15px) scale(0.96);
+      }
+
+      50% {
+        opacity: 1;
+        filter: blur(0);
+        transform: translateY(0) scale(1);
+      }
+
+      100% {
+        opacity: 0.45;
+        filter: blur(1.7px);
+        transform: translateY(15px) scale(0.96);
+      }
+    }
+
+    /* 결과창을 가로지르는 속도선 */
+    .speed-line {
+      position: absolute;
+      z-index: 2;
+      left: -130px;
+      width: 95px;
+      height: 5px;
+      border-radius: 999px;
+      background:
+        linear-gradient(
+          90deg,
+          transparent,
+          rgba(255, 103, 0, 0.56)
+        );
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .speed-line-one {
+      top: 26%;
+    }
+
+    .speed-line-two {
+      top: 49%;
+      width: 130px;
+    }
+
+    .speed-line-three {
+      top: 72%;
+      width: 80px;
+    }
+
+    .result-panel.spinning .speed-line {
+      animation: speed-line-move 0.52s linear infinite;
+    }
+
+    .result-panel.spinning .speed-line-two {
+      animation-delay: 0.13s;
+    }
+
+    .result-panel.spinning .speed-line-three {
+      animation-delay: 0.27s;
+    }
+
+    @keyframes speed-line-move {
+      0% {
+        left: -130px;
+        opacity: 0;
+      }
+
+      20% {
+        opacity: 1;
+      }
+
+      80% {
+        opacity: 1;
+      }
+
+      100% {
+        left: calc(100% + 20px);
+        opacity: 0;
+      }
+    }
+
+    /* 당첨 상태 */
+    .result-panel.winner {
+      border-color: var(--yellow-400);
+      background:
+        radial-gradient(
+          circle at center,
+          #fffef5 0%,
+          #fff1a0 49%,
+          #ffbd2c 100%
+        );
+      box-shadow:
+        inset 0 0 0 7px rgba(255, 255, 255, 0.76),
+        0 0 0 8px rgba(255, 192, 0, 0.18),
+        0 20px 50px rgba(221, 85, 0, 0.28);
+      animation: panel-celebration 0.7s ease both;
+    }
+
+    .result-panel.winner .result-guide {
+      color: var(--red-600);
+    }
+
+    .result-panel.winner .result-text {
+      color: var(--red-500);
+      background:
+        linear-gradient(
+          180deg,
+          #c9180e 0%,
+          #ef3920 34%,
+          #ff9900 63%,
+          #a92700 100%
+        );
+      background-clip: text;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      filter:
+        drop-shadow(0 3px 0 #fff4a3)
+        drop-shadow(0 8px 2px rgba(132, 38, 0, 0.2));
+      animation:
+        winner-zoom
+        0.86s
+        cubic-bezier(0.18, 0.89, 0.3, 1.35)
+        both;
+    }
+
+    .result-panel.winner .winner-message {
+      color: var(--red-600);
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    @keyframes winner-zoom {
+      0% {
+        opacity: 0;
+        transform: scale(0.3) rotate(-8deg);
+      }
+
+      55% {
+        opacity: 1;
+        transform: scale(1.23) rotate(3deg);
+      }
+
+      76% {
+        transform: scale(0.94) rotate(-1deg);
+      }
+
+      100% {
+        opacity: 1;
+        transform: scale(1) rotate(0);
+      }
+    }
+
+    @keyframes panel-celebration {
+      0% {
+        transform: scale(0.98);
+      }
+
+      48% {
+        transform: scale(1.027);
+      }
+
+      100% {
+        transform: scale(1);
+      }
+    }
+
+    /* 컨페티 */
+    .confetti-layer {
+      position: fixed;
+      inset: 0;
+      z-index: 999;
+      overflow: hidden;
+      pointer-events: none;
+    }
+
+    .confetti-piece {
+      position: absolute;
+      top: -35px;
+      width: var(--size, 11px);
+      height: calc(var(--size, 11px) * 1.7);
+      border-radius: 3px;
+      opacity: 0;
+      animation:
+        confetti-fall
+        var(--duration, 2.2s)
+        cubic-bezier(0.2, 0.7, 0.4, 1)
+        forwards;
+      animation-delay: var(--delay, 0s);
+    }
+
+    @keyframes confetti-fall {
+      0% {
+        opacity: 1;
+        transform:
+          translate3d(0, -30px, 0)
+          rotateX(0deg)
+          rotateZ(0deg);
+      }
+
+      30% {
+        opacity: 1;
+      }
+
+      100% {
+        opacity: 0;
+        transform:
+          translate3d(
+            var(--drift, 0),
+            calc(100vh + 80px),
+            0
+          )
+          rotateX(720deg)
+          rotateZ(1080deg);
+      }
+    }
+
+    @media (max-width: 640px) {
+      body {
+        padding: 14px;
+      }
+
+      .page {
+        min-height: calc(100vh - 28px);
+      }
+
+      .selector-card {
+        padding: 29px 18px;
+        border-radius: 27px;
+      }
+
+      .subtitle {
+        font-size: 14px;
+      }
+
+      .candidate-summary {
+        margin: 22px auto;
+        font-size: 14px;
+      }
+
+      .result-panel {
+        min-height: 240px;
+        padding: 31px 13px;
+        border-radius: 23px;
+      }
+
+      .result-panel::before,
+      .result-panel::after {
+        font-size: 43px;
+      }
+
+      .select-button {
+        min-height: 72px;
+        padding-inline: 17px;
+        border-radius: 20px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        scroll-behavior: auto !important;
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+
+      .confetti-layer,
+      .speed-line {
+        display: none;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div
+    class="background-decoration decoration-left"
+    aria-hidden="true"
+  ></div>
+
+  <div
+    class="background-decoration decoration-right"
+    aria-hidden="true"
+  ></div>
+
+  <div
+    id="confettiLayer"
+    class="confetti-layer"
+    aria-hidden="true"
+  ></div>
+
+  <main class="page">
+    <section
+      class="selector-card"
+      aria-labelledby="pageTitle"
+    >
+      <header class="header">
+        <div class="header-badge" aria-hidden="true">
+          🏁 오늘의 레이서 추첨
+        </div>
+
+        <h1 id="pageTitle" class="title">
+          마리오카트
+          <span class="title-highlight">
+            운전자 고르기
+          </span>
+        </h1>
+
+        <p class="subtitle">
+          오늘 레이스를 책임질 운전자는 누구일까요?<br>
+          버튼을 눌러 운명의 캐릭터를 만나보세요!
+        </p>
+      </header>
+
+      <div class="candidate-summary">
+        <span aria-hidden="true">🏎️</span>
+
+        <span>
+          기본 운전자 후보
+          <strong
+            id="candidateCount"
+            class="candidate-count"
+          >
+            35명
+          </strong>
+          준비 완료
+        </span>
+      </div>
+
+      <section
+        id="resultPanel"
+        class="result-panel"
+        aria-label="마리오카트 운전자 추첨 결과"
+      >
+        <span
+          class="speed-line speed-line-one"
+          aria-hidden="true"
+        ></span>
+
+        <span
+          class="speed-line speed-line-two"
+          aria-hidden="true"
+        ></span>
+
+        <span
+          class="speed-line speed-line-three"
+          aria-hidden="true"
+        ></span>
+
+        <div class="result-content">
+          <p id="resultGuide" class="result-guide">
+            오늘의 운전자를 뽑아보세요
+          </p>
+
+          <div
+            id="resultText"
+            class="result-text"
+            role="status"
+            aria-live="polite"
+            aria-atomic="true"
+          >
+            출발 준비!
+          </div>
+
+          <p
+            id="winnerMessage"
+            class="winner-message"
+          >
+            오늘은 너다!
+          </p>
+        </div>
+      </section>
+
+      <div class="action-section">
+        <button
+          id="selectButton"
+          class="select-button"
+          type="button"
+        >
+          🏎️ 마리오카트 운전자 고르기! 😊
+        </button>
+
+        <p class="keyboard-help">
+          Enter 또는 Space 키로도 추첨할 수 있습니다.
+        </p>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    "use strict";
+
+    /*
+     * 마리오카트 8 디럭스의 기본 캐릭터를
+     * 운전자 후보로 설정합니다.
+     */
+    const DEFAULT_DRIVERS = [
+      "마리오",
+      "루이지",
+      "피치",
+      "데이지",
+      "로젤리나",
+      "너구리 마리오",
+      "고양이 피치",
+      "요시",
+      "키노피오",
+      "엉금엉금",
+      "헤이호",
+      "김수한무",
+      "키노피코",
+      "킹부끄",
+      "베이비 마리오",
+      "베이비 루이지",
+      "베이비 피치",
+      "베이비 데이지",
+      "베이비 로젤리나",
+      "메탈 마리오",
+      "핑크 골드 피치",
+      "와리오",
+      "와루이지",
+      "동키콩",
+      "쿠파",
+      "와르르",
+      "쿠파주니어",
+      "좀비쿠파",
+      "레미",
+      "래리",
+      "웬디",
+      "루드윅",
+      "이기",
+      "로이",
+      "모톤"
+    ];
+
+    const SPIN_DURATION = 3000;
+    const INITIAL_INTERVAL = 55;
+    const FINAL_INTERVAL = 240;
+
+    const candidateCount =
+      document.getElementById("candidateCount");
+
+    const resultPanel =
+      document.getElementById("resultPanel");
+
+    const resultGuide =
+      document.getElementById("resultGuide");
+
+    const resultText =
+      document.getElementById("resultText");
+
+    const selectButton =
+      document.getElementById("selectButton");
+
+    const confettiLayer =
+      document.getElementById("confettiLayer");
+
+    let isSpinning = false;
+    let finishTimerId = null;
+    let slotTimerId = null;
+    let previousIndex = -1;
+
+    function getRandomIndex(length) {
+      if (length <= 1) {
+        return 0;
+      }
+
+      let nextIndex;
+
+      do {
+        nextIndex = Math.floor(
+          Math.random() * length
+        );
+      } while (nextIndex === previousIndex);
+
+      previousIndex = nextIndex;
+
+      return nextIndex;
+    }
+
+    function getRandomDriver() {
+      return DEFAULT_DRIVERS[
+        getRandomIndex(DEFAULT_DRIVERS.length)
+      ];
+    }
+
+    function chooseFinalWinner() {
+      const winnerIndex = Math.floor(
+        Math.random() * DEFAULT_DRIVERS.length
+      );
+
+      return DEFAULT_DRIVERS[winnerIndex];
+    }
+
+    function clearTimers() {
+      if (finishTimerId !== null) {
+        window.clearTimeout(finishTimerId);
+        finishTimerId = null;
+      }
+
+      if (slotTimerId !== null) {
+        window.clearTimeout(slotTimerId);
+        slotTimerId = null;
+      }
+    }
+
+    function resetResultAppearance() {
+      resultPanel.classList.remove(
+        "spinning",
+        "winner"
+      );
+
+      confettiLayer.replaceChildren();
+    }
+
+    function updateSlotMachine(startTime) {
+      if (!isSpinning) {
+        return;
+      }
+
+      const elapsed =
+        performance.now() - startTime;
+
+      const progress = Math.min(
+        elapsed / SPIN_DURATION,
+        1
+      );
+
+      /*
+       * 3제곱 가속 곡선을 사용해
+       * 초반에는 빠르고 마지막에는 점차 느려집니다.
+       */
+      const easedProgress =
+        progress * progress * progress;
+
+      const currentInterval =
+        INITIAL_INTERVAL +
+        (
+          FINAL_INTERVAL -
+          INITIAL_INTERVAL
+        ) *
+        easedProgress;
+
+      resultText.textContent =
+        getRandomDriver();
+
+      slotTimerId = window.setTimeout(
+        function () {
+          updateSlotMachine(startTime);
+        },
+        currentInterval
+      );
+    }
+
+    function createConfetti() {
+      const colors = [
+        "#ef3024",
+        "#ff7900",
+        "#ffc400",
+        "#ffe138",
+        "#147df5",
+        "#42b72a",
+        "#ff62a5",
+        "#8b5cf6"
+      ];
+
+      confettiLayer.replaceChildren();
+
+      const fragment =
+        document.createDocumentFragment();
+
+      const pieceCount =
+        window.innerWidth < 600 ? 72 : 110;
+
+      for (
+        let index = 0;
+        index < pieceCount;
+        index += 1
+      ) {
+        const piece =
+          document.createElement("span");
+
+        const randomSize =
+          7 + Math.random() * 8;
+
+        const randomColor =
+          colors[
+            Math.floor(
+              Math.random() * colors.length
+            )
+          ];
+
+        piece.className = "confetti-piece";
+
+        piece.style.left =
+          Math.random() * 100 + "%";
+
+        piece.style.backgroundColor =
+          randomColor;
+
+        piece.style.setProperty(
+          "--size",
+          randomSize + "px"
+        );
+
+        piece.style.setProperty(
+          "--delay",
+          Math.random() * 0.72 + "s"
+        );
+
+        piece.style.setProperty(
+          "--duration",
+          2.1 + Math.random() * 1.8 + "s"
+        );
+
+        piece.style.setProperty(
+          "--drift",
+          -130 + Math.random() * 260 + "px"
+        );
+
+        fragment.appendChild(piece);
+      }
+
+      confettiLayer.appendChild(fragment);
+
+      window.setTimeout(
+        function () {
+          confettiLayer.replaceChildren();
+        },
+        5200
+      );
+    }
+
+    function finishSelection() {
+      isSpinning = false;
+
+      if (slotTimerId !== null) {
+        window.clearTimeout(slotTimerId);
+        slotTimerId = null;
+      }
+
+      const winner = chooseFinalWinner();
+
+      resultPanel.classList.remove("spinning");
+
+      /*
+       * 버튼을 다시 눌렀을 때 당첨 애니메이션이
+       * 처음부터 실행되도록 강제로 리플로우합니다.
+       */
+      resultPanel.classList.remove("winner");
+      void resultPanel.offsetWidth;
+      resultPanel.classList.add("winner");
+
+      resultGuide.textContent =
+        "🏆 오늘의 당첨 운전자";
+
+      resultText.textContent = winner;
+
+      selectButton.disabled = false;
+
+      selectButton.textContent =
+        "🏎️ 다시 운전자 고르기! 😊";
+
+      createConfetti();
+
+      selectButton.focus({
+        preventScroll: true
+      });
+    }
+
+    function startSelection() {
+      if (isSpinning) {
+        return;
+      }
+
+      clearTimers();
+      resetResultAppearance();
+
+      isSpinning = true;
+      previousIndex = -1;
+
+      selectButton.disabled = true;
+
+      selectButton.textContent =
+        "🏁 운전자 고르는 중...";
+
+      resultGuide.textContent =
+        "운명의 레이서가 달려오는 중";
+
+      resultText.textContent =
+        getRandomDriver();
+
+      resultPanel.classList.add("spinning");
+
+      const startTime = performance.now();
+
+      updateSlotMachine(startTime);
+
+      finishTimerId = window.setTimeout(
+        finishSelection,
+        SPIN_DURATION
+      );
+    }
+
+    selectButton.addEventListener(
+      "click",
+      startSelection
+    );
+
+    document.addEventListener(
+      "keydown",
+      function (event) {
+        if (isSpinning) {
+          return;
+        }
+
+        if (
+          event.key === "Enter" ||
+          event.code === "Space"
+        ) {
+          event.preventDefault();
+          startSelection();
+        }
+      }
+    );
+
+    window.addEventListener(
+      "beforeunload",
+      clearTimers
+    );
+
+    candidateCount.textContent =
+      DEFAULT_DRIVERS.length + "명";
+  </script>
+</body>
+</html>
